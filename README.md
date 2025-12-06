@@ -2,12 +2,11 @@
 
 ## セットアップ
 
-### 1. システムの依存関係をインストール
+### 1. Install system dependencies
 
 ```bash
 sudo apt update
-sudo apt install -y nodejs npm
-sudo apt install -y gpiod libgpiod-dev
+sudo apt install -y nodejs npm python3 python3-lgpio
 ```
 
 ### 2. Node.js パッケージをインストール
