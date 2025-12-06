@@ -83,7 +83,7 @@ console.log('Press Ctrl+C to exit');
 const interval = setInterval(() => {
   const switchState = readGPIO(GPIO_SWITCH);
   // スイッチが押されている(HIGH)ならLEDを点灯、そうでなければ消灯
-  writeGPIO(GPIO_LED, switchState);
+  writeGPIO(GPIO_LED, !switchState);
 }, 100); // 100ms間隔でチェック
 
 // Handle program termination
