@@ -1,5 +1,6 @@
 {
   "scripts": {
-    "start": "sudo node node/start.js"
+    "start": "node node/start.js",
+    "start2": "node node/start2.js"
   }
 }
