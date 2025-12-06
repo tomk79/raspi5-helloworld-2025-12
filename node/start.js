@@ -2,6 +2,7 @@ const { execSync, spawn } = require('child_process');
 const fs = require('fs');
 
 const GPIO_PIN = 17;
+let gpioProcess = null;
 
 // GPIO初期化関数
 function initGPIO() {
@@ -25,12 +26,26 @@ function initGPIO() {
 // GPIO値を書き込む関数
 function writeGPIO(value) {
   try {
+    // 既存のプロセスがあれば終了
+    if (gpioProcess) {
+      try {
+        gpioProcess.kill();
+      } catch (e) {}
+      gpioProcess = null;
+    }
+    
     // gpioset を使用してGPIOピンに値を書き込む
-    // Raspberry Pi 5では通常gpiochip4を使用
-    execSync(`gpioset gpiochip4 ${GPIO_PIN}=${value ? '1' : '0'}`, { 
-      stdio: 'pipe',
-      timeout: 1000 
+    // Raspberry Pi 5ではgpiochip0 (pinctrl-rp1)を使用
+    // --mode=signal を使用して、プロセスが生きている間状態を保持
+    gpioProcess = spawn('gpioset', [
+      '--mode=signal',
+      'gpiochip0',
+      `${GPIO_PIN}=${value ? '1' : '0'}`
+    ], {
+      stdio: 'ignore',
+      detached: false
     });
+    
     return true;
   } catch (err) {
     console.error('GPIO write error:', err.message);
@@ -41,7 +56,11 @@ function writeGPIO(value) {
 // GPIOクリーンアップ関数
 function cleanupGPIO() {
   try {
-    writeGPIO(0); // LEDを消灯
+    // gpioプロセスを終了
+    if (gpioProcess) {
+      gpioProcess.kill();
+      gpioProcess = null;
+    }
     console.log('\nGPIO cleaned up');
   } catch (err) {
     console.error('GPIO cleanup error:', err.message);
