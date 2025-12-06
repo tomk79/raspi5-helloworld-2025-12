@@ -12,15 +12,33 @@ const GPIO_VALUE = path.join(GPIO_PIN_PATH, 'value');
 // GPIO初期化関数
 function initGPIO() {
   try {
-    // GPIOピンをエクスポート
-    if (!fs.existsSync(GPIO_PIN_PATH)) {
-      fs.writeFileSync(GPIO_EXPORT, String(GPIO_PIN));
-      // エクスポート後、ファイルが作成されるまで少し待つ
-      let retries = 10;
-      while (!fs.existsSync(GPIO_DIRECTION) && retries > 0) {
-        setTimeout(() => {}, 100);
-        retries--;
+    // 既にエクスポートされている場合は先にアンエクスポート
+    if (fs.existsSync(GPIO_PIN_PATH)) {
+      console.log(`GPIO${GPIO_PIN} is already exported. Unexporting first...`);
+      try {
+        fs.writeFileSync(GPIO_UNEXPORT, String(GPIO_PIN));
+        // アンエクスポート後、少し待つ
+        const start = Date.now();
+        while (fs.existsSync(GPIO_PIN_PATH) && (Date.now() - start) < 1000) {
+          // 待機
+        }
+      } catch (unexportErr) {
+        console.warn('Unexport warning:', unexportErr.message);
       }
+    }
+    
+    // GPIOピンをエクスポート
+    fs.writeFileSync(GPIO_EXPORT, String(GPIO_PIN));
+    console.log(`GPIO${GPIO_PIN} exported`);
+    
+    // エクスポート後、ファイルが作成されるまで待つ
+    const start = Date.now();
+    while (!fs.existsSync(GPIO_DIRECTION) && (Date.now() - start) < 2000) {
+      // 待機
+    }
+    
+    if (!fs.existsSync(GPIO_DIRECTION)) {
+      throw new Error('GPIO direction file was not created');
     }
     
     // ピンを出力モードに設定
