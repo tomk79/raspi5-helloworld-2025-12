@@ -45,8 +45,8 @@ function readGPIO(pin) {
     // 出力形式: "4"=inactive または "4"=active
     const result = execSync(`gpioget -c 0 ${pin}`, { encoding: 'utf8' });
     const trimmed = result.trim();
-    // "active"が含まれていれば1、そうでなければ0
-    return trimmed.includes('active') ? 1 : 0;
+    // "=active"で終わっていれば1、そうでなければ0
+    return trimmed.endsWith('=active') ? 1 : 0;
   } catch (err) {
     console.error('GPIO read error:', err.message);
     return 0;
