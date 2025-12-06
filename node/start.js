@@ -33,29 +33,25 @@ function initGPIO() {
 // GPIO値を書き込む関数
 function writeGPIO(value) {
   try {
-    // 既存のプロセスがあれば終了して少し待つ
+    // 既存のプロセスがあれば終了
     if (gpioProcess) {
       try {
-        gpioProcess.kill();
-        // プロセスが確実に終了するまで待機
-        const start = Date.now();
-        while (Date.now() - start < 50) {
-          // 50ms待機
-        }
+        gpioProcess.kill('SIGTERM');
       } catch (e) {}
       gpioProcess = null;
     }
     
-    // さらに既存のgpiosetプロセスをクリーンアップ
+    // すべての既存gpiosetプロセスを強制終了
     try {
-      execSync(`pkill -f "gpioset.*${GPIO_PIN}="`, { stdio: 'ignore' });
-      // プロセス終了後、少し待つ
-      const start = Date.now();
-      while (Date.now() - start < 50) {
-        // 50ms待機
-      }
+      execSync(`pkill -9 -f "gpioset.*-c 0.*${GPIO_PIN}="`, { stdio: 'ignore' });
     } catch (e) {
       // プロセスが見つからない場合は無視
+    }
+    
+    // リソースが解放されるまで待機
+    const start = Date.now();
+    while (Date.now() - start < 100) {
+      // 100ms待機
     }
     
     // gpioset を使用してGPIOピンに値を書き込む
@@ -69,6 +65,12 @@ function writeGPIO(value) {
       stdio: 'ignore',
       detached: false
     });
+    
+    // プロセスが起動するまで少し待つ
+    const start2 = Date.now();
+    while (Date.now() - start2 < 10) {
+      // 10ms待機
+    }
     
     return true;
   } catch (err) {
