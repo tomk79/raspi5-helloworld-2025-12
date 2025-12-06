@@ -1,8 +1,5 @@
 {
   "scripts": {
-    "start": "node node/start.js"
-  },
-  "dependencies": {
-    "pigpio": "^3.3.1"
+    "start": "sudo node node/start.js"
   }
 }
