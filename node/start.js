@@ -36,9 +36,9 @@ function writeGPIO(value) {
     
     // gpioset を使用してGPIOピンに値を書き込む
     // Raspberry Pi 5ではgpiochip0 (pinctrl-rp1)を使用
-    // --mode=signal を使用して、プロセスが生きている間状態を保持
+    // -z オプションでプロセスが生きている間状態を保持
     gpioProcess = spawn('gpioset', [
-      '--mode=signal',
+      '-z',
       'gpiochip0',
       `${GPIO_PIN}=${value ? '1' : '0'}`
     ], {
