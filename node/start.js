@@ -58,7 +58,6 @@ function writeGPIO(value) {
     // Raspberry Pi 5ではgpiochip0 (chip 0)を使用
     // --daemonize でバックグラウンド実行、-c でチップ番号指定
     gpioProcess = spawn('gpioset', [
-      '--daemonize',
       '-c', '0',
       `${GPIO_PIN}=${value ? '1' : '0'}`
     ], {
