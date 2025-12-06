@@ -3,6 +3,6 @@
     "start": "node node/start.js"
   },
   "dependencies": {
-    "lgpio": "^1.2.3"
+    "onoff": "^6.0.3"
   }
 }
