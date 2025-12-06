@@ -3,6 +3,6 @@
     "start": "node node/start.js"
   },
   "dependencies": {
-    "onoff": "^6.0.3"
+    "node-gpiod": "^1.0.1"
   }
 }

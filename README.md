@@ -7,6 +7,7 @@
 ```bash
 sudo apt update
 sudo apt install -y nodejs npm
+sudo apt install -y gpiod libgpiod-dev
 ```
 
 ### 2. Node.js パッケージをインストール
