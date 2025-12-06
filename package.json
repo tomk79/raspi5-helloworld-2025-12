@@ -3,6 +3,6 @@
     "start": "node node/start.js"
   },
   "dependencies": {
-    "node-libgpiod": "^0.5.3"
+    "lgpio": "^1.2.3"
   }
 }
