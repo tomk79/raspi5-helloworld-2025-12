@@ -1,8 +1,26 @@
-const gpiod = require('node-gpiod');
+const Gpiod = require('node-gpiod');
 
-// デバッグ: node-gpiodのエクスポート内容を確認
-console.log('node-gpiod exports:', Object.keys(gpiod));
-console.log('node-gpiod:', gpiod);
+// Raspberry Pi 5では gpiochip4 を使用
+const GPIO_CHIP = 4;
+const GPIO_PIN = 17;
 
-// まずはAPIを確認するためのテストコード
-// 実際のLED制御は後で実装
+// GPIOオブジェクトを作成（チップ番号、ピン番号、モード）
+const led = new Gpiod(GPIO_CHIP, GPIO_PIN, Gpiod.OUTPUT);
+console.log(`GPIO${GPIO_PIN}を出力モードで設定しました`);
+
+let value = 0;
+
+const interval = setInterval(() => {
+  value = value ^ 1; // 0/1反転
+  led.write(value);
+  console.log(`LED ${value ? 'ON' : 'OFF'}`);
+}, 500); // 0.5秒間隔
+
+// プログラム終了時の処理
+process.on('SIGINT', () => {
+  clearInterval(interval);
+  led.write(0);  // LEDを消灯
+  led.close();   // GPIOリソースを解放
+  console.log('\nプログラムを終了します');
+  process.exit();
+});
