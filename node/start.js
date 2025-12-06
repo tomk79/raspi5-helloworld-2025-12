@@ -1,49 +1,20 @@
+const { execSync, spawn } = require('child_process');
 const fs = require('fs');
-const path = require('path');
 
 const GPIO_PIN = 17;
-const GPIO_PATH = '/sys/class/gpio';
-const GPIO_EXPORT = path.join(GPIO_PATH, 'export');
-const GPIO_UNEXPORT = path.join(GPIO_PATH, 'unexport');
-const GPIO_PIN_PATH = path.join(GPIO_PATH, `gpio${GPIO_PIN}`);
-const GPIO_DIRECTION = path.join(GPIO_PIN_PATH, 'direction');
-const GPIO_VALUE = path.join(GPIO_PIN_PATH, 'value');
 
 // GPIO初期化関数
 function initGPIO() {
   try {
-    // 既にエクスポートされている場合は先にアンエクスポート
-    if (fs.existsSync(GPIO_PIN_PATH)) {
-      console.log(`GPIO${GPIO_PIN} is already exported. Unexporting first...`);
-      try {
-        fs.writeFileSync(GPIO_UNEXPORT, String(GPIO_PIN));
-        // アンエクスポート後、少し待つ
-        const start = Date.now();
-        while (fs.existsSync(GPIO_PIN_PATH) && (Date.now() - start) < 1000) {
-          // 待機
-        }
-      } catch (unexportErr) {
-        console.warn('Unexport warning:', unexportErr.message);
-      }
+    // gpiosetコマンドの存在確認
+    try {
+      execSync('which gpioset', { stdio: 'pipe' });
+    } catch (err) {
+      console.error('gpioset command not found. Please install: sudo apt install gpiod');
+      return false;
     }
     
-    // GPIOピンをエクスポート
-    fs.writeFileSync(GPIO_EXPORT, String(GPIO_PIN));
-    console.log(`GPIO${GPIO_PIN} exported`);
-    
-    // エクスポート後、ファイルが作成されるまで待つ
-    const start = Date.now();
-    while (!fs.existsSync(GPIO_DIRECTION) && (Date.now() - start) < 2000) {
-      // 待機
-    }
-    
-    if (!fs.existsSync(GPIO_DIRECTION)) {
-      throw new Error('GPIO direction file was not created');
-    }
-    
-    // ピンを出力モードに設定
-    fs.writeFileSync(GPIO_DIRECTION, 'out');
-    console.log(`GPIO${GPIO_PIN} configured as output mode`);
+    console.log(`GPIO${GPIO_PIN} ready for use with gpioset`);
     return true;
   } catch (err) {
     console.error('GPIO initialization error:', err.message);
@@ -54,7 +25,12 @@ function initGPIO() {
 // GPIO値を書き込む関数
 function writeGPIO(value) {
   try {
-    fs.writeFileSync(GPIO_VALUE, value ? '1' : '0');
+    // gpioset を使用してGPIOピンに値を書き込む
+    // Raspberry Pi 5では通常gpiochip4を使用
+    execSync(`gpioset gpiochip4 ${GPIO_PIN}=${value ? '1' : '0'}`, { 
+      stdio: 'pipe',
+      timeout: 1000 
+    });
     return true;
   } catch (err) {
     console.error('GPIO write error:', err.message);
@@ -66,9 +42,6 @@ function writeGPIO(value) {
 function cleanupGPIO() {
   try {
     writeGPIO(0); // LEDを消灯
-    if (fs.existsSync(GPIO_PIN_PATH)) {
-      fs.writeFileSync(GPIO_UNEXPORT, String(GPIO_PIN));
-    }
     console.log('\nGPIO cleaned up');
   } catch (err) {
     console.error('GPIO cleanup error:', err.message);
