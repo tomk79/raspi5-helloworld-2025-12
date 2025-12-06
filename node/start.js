@@ -1,18 +1,17 @@
-const { Chip } = require('node-gpiod');
+const gpiod = require('node-gpiod');
 
 // Raspberry Pi 5では gpiochip4 を使用
-const chip = new Chip(4);
+const chipPath = '/dev/gpiochip4';
+const GPIO_PIN = 17;
 
-// GPIO17をLEDとして使用（出力モード）
-const line = chip.getLine(17);
-const lineConfig = {
-  request: {
-    type: 'output',
-    flags: 0,
-    outputValues: [0]
-  }
-};
-line.requestOutputMode();
+// GPIOチップを開く
+const chip = gpiod.openChip(chipPath);
+console.log(`GPIOチップを開きました: ${chipPath}`);
+
+// GPIO17を出力として設定
+const line = chip.getLine(GPIO_PIN);
+line.requestOutputMode('LED', 0);
+console.log(`GPIO${GPIO_PIN}を出力モードで設定しました`);
 
 let value = 0;
 
