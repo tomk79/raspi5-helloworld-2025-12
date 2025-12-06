@@ -100,6 +100,7 @@ const interval = setInterval(() => {
 // Handle program termination
 process.on('SIGINT', () => {
   clearInterval(interval);
+  writeGPIO(0); // 終了時に0を書き込む
   cleanupGPIO();
   process.exit();
 });
