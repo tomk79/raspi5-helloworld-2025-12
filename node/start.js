@@ -15,6 +15,13 @@ function initGPIO() {
       return false;
     }
     
+    // 既存のgpiosetプロセスをクリーンアップ
+    try {
+      execSync(`pkill -f "gpioset.*${GPIO_PIN}="`, { stdio: 'ignore' });
+    } catch (e) {
+      // プロセスが見つからない場合は無視
+    }
+    
     console.log(`GPIO${GPIO_PIN} ready for use with gpioset`);
     return true;
   } catch (err) {
@@ -26,12 +33,29 @@ function initGPIO() {
 // GPIO値を書き込む関数
 function writeGPIO(value) {
   try {
-    // 既存のプロセスがあれば終了
+    // 既存のプロセスがあれば終了して少し待つ
     if (gpioProcess) {
       try {
         gpioProcess.kill();
+        // プロセスが確実に終了するまで待機
+        const start = Date.now();
+        while (Date.now() - start < 50) {
+          // 50ms待機
+        }
       } catch (e) {}
       gpioProcess = null;
+    }
+    
+    // さらに既存のgpiosetプロセスをクリーンアップ
+    try {
+      execSync(`pkill -f "gpioset.*${GPIO_PIN}="`, { stdio: 'ignore' });
+      // プロセス終了後、少し待つ
+      const start = Date.now();
+      while (Date.now() - start < 50) {
+        // 50ms待機
+      }
+    } catch (e) {
+      // プロセスが見つからない場合は無視
     }
     
     // gpioset を使用してGPIOピンに値を書き込む
@@ -61,6 +85,10 @@ function cleanupGPIO() {
       gpioProcess.kill();
       gpioProcess = null;
     }
+    // すべてのgpiosetプロセスをクリーンアップ
+    try {
+      execSync(`pkill -f "gpioset.*${GPIO_PIN}="`, { stdio: 'ignore' });
+    } catch (e) {}
     console.log('\nGPIO cleaned up');
   } catch (err) {
     console.error('GPIO cleanup error:', err.message);
