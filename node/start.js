@@ -33,30 +33,9 @@ function initGPIO() {
 // GPIO値を書き込む関数
 function writeGPIO(value) {
   try {
-    // 既存のプロセスがあれば終了
-    if (gpioProcess) {
-      try {
-        gpioProcess.kill('SIGTERM');
-      } catch (e) {}
-      gpioProcess = null;
-    }
-    
-    // すべての既存gpiosetプロセスを強制終了
-    try {
-      execSync(`pkill -9 -f "gpioset.*-c 0.*${GPIO_PIN}="`, { stdio: 'ignore' });
-    } catch (e) {
-      // プロセスが見つからない場合は無視
-    }
-    
-    // リソースが解放されるまで待機
-    const start = Date.now();
-    while (Date.now() - start < 100) {
-      // 100ms待機
-    }
-    
     // gpioset を使用してGPIOピンに値を書き込む
     // Raspberry Pi 5ではgpiochip0 (chip 0)を使用
-    // --daemonize でバックグラウンド実行、-c でチップ番号指定
+    // gpiosetは実行直後にGPIO値が書き込まれ、プロセス終了後も値は保持される
     gpioProcess = spawn('gpioset', [
       '-c', '0',
       `${GPIO_PIN}=${value ? '1' : '0'}`
@@ -65,10 +44,18 @@ function writeGPIO(value) {
       detached: false
     });
     
-    // プロセスが起動するまで少し待つ
-    const start2 = Date.now();
-    while (Date.now() - start2 < 10) {
+    // GPIO値が書き込まれるまで少し待機
+    const start = Date.now();
+    while (Date.now() - start < 10) {
       // 10ms待機
+    }
+    
+    // 値が書き込まれたのでプロセスを終了
+    if (gpioProcess) {
+      try {
+        gpioProcess.kill('SIGTERM');
+      } catch (e) {}
+      gpioProcess = null;
     }
     
     return true;
