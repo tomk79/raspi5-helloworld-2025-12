@@ -42,8 +42,11 @@ function writeGPIO(pin, value) {
 function readGPIO(pin) {
   try {
     // gpioget を使用してGPIOピンの値を読み込む
+    // 出力形式: "4"=inactive または "4"=active
     const result = execSync(`gpioget -c 0 ${pin}`, { encoding: 'utf8' });
-    return parseInt(result.trim());
+    const trimmed = result.trim();
+    // "active"が含まれていれば1、そうでなければ0
+    return trimmed.includes('active') ? 1 : 0;
   } catch (err) {
     console.error('GPIO read error:', err.message);
     return 0;
