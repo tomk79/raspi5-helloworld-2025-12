@@ -10,9 +10,15 @@ app = Flask(__name__)
 
 # 利用可能なカメラ数を取得
 available_cameras = Picamera2.global_camera_info()
+print(f"\n=== カメラ検出情報 ===")
 print(f"利用可能なカメラ数: {len(available_cameras)}")
 for i, cam in enumerate(available_cameras):
-    print(f"  カメラ{i}: {cam}")
+    print(f"\nカメラインデックス {i}:")
+    print(f"  モデル: {cam.get('Model', '不明')}")
+    print(f"  ID: {cam.get('Id', '不明')}")
+    print(f"  場所: {cam.get('Location', '不明')}")
+    print(f"  詳細: {cam}")
+print("=" * 40 + "\n")
 
 # カメラ0とカメラ1を初期化
 picam2_0 = None
