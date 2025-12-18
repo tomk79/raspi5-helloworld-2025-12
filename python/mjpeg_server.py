@@ -8,29 +8,43 @@ import numpy as np
 
 app = Flask(__name__)
 
+# 利用可能なカメラ数を取得
+available_cameras = Picamera2.global_camera_info()
+print(f"利用可能なカメラ数: {len(available_cameras)}")
+for i, cam in enumerate(available_cameras):
+    print(f"  カメラ{i}: {cam}")
+
 # カメラ0とカメラ1を初期化
 picam2_0 = None
 picam2_1 = None
 
-try:
-    picam2_0 = Picamera2(0)
-    picam2_0.configure(picam2_0.create_video_configuration(
-        main={"size": (640, 480)}
-    ))
-    picam2_0.start()
-    print("カメラ0を初期化しました")
-except (IndexError, RuntimeError) as e:
-    print(f"カメラ0の初期化に失敗しました: {e}")
+# カメラ0を初期化(最低1つは必要)
+if len(available_cameras) > 0:
+    try:
+        picam2_0 = Picamera2(0)
+        picam2_0.configure(picam2_0.create_video_configuration(
+            main={"size": (640, 480)}
+        ))
+        picam2_0.start()
+        print("カメラ0を初期化しました")
+    except (IndexError, RuntimeError) as e:
+        print(f"カメラ0の初期化に失敗しました: {e}")
+else:
+    print("警告: 利用可能なカメラがありません")
 
-try:
-    picam2_1 = Picamera2(1)
-    picam2_1.configure(picam2_1.create_video_configuration(
-        main={"size": (640, 480)}
-    ))
-    picam2_1.start()
-    print("カメラ1を初期化しました")
-except (IndexError, RuntimeError) as e:
-    print(f"カメラ1の初期化に失敗しました: {e}")
+# カメラ1を初期化(2つ目のカメラが存在する場合のみ)
+if len(available_cameras) > 1:
+    try:
+        picam2_1 = Picamera2(1)
+        picam2_1.configure(picam2_1.create_video_configuration(
+            main={"size": (640, 480)}
+        ))
+        picam2_1.start()
+        print("カメラ1を初期化しました")
+    except (IndexError, RuntimeError) as e:
+        print(f"カメラ1の初期化に失敗しました: {e}")
+else:
+    print("カメラ1は利用できません(カメラが1つしか接続されていません)")
 
 time.sleep(1)
 
