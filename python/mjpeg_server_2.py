@@ -6,7 +6,8 @@ import time
 
 app = Flask(__name__)
 
-picam2 = Picamera2()
+# カメラ1を使用
+picam2 = Picamera2(1)
 picam2.configure(picam2.create_video_configuration(
     main={"size": (640, 480)}
 ))
@@ -27,4 +28,4 @@ def stream():
         mimetype='multipart/x-mixed-replace; boundary=frame')
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8081, threaded=True)
+    app.run(host='0.0.0.0', port=8082, threaded=True)
